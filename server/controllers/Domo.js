@@ -50,6 +50,26 @@ const getDomos = (request, response) => {
   });
 };
 
+const deleteDomo = (request, response) => {
+  const req = request;
+  const res = response;
+
+  const name = req.query.name;
+
+  if(!name) {
+    return res.status(400).json({ error: "You must provide the name of the domo to delete" });
+  }
+
+  return Domo.DomoModel.removeByOwnerAndName(req.session.account._id, name, (err) => {
+    if(err) {
+      console.log(err);
+      return res.status(500).json({ error: "Error deleting domo domo" });
+    }
+    return res.status(204).end();
+  });
+};
+
 module.exports.makerPage = makerPage;
 module.exports.getDomos = getDomos;
+module.exports.deleteDomo = deleteDomo;
 module.exports.make = makeDomo;

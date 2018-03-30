@@ -1,7 +1,7 @@
-const loadDomosFromServer = () => {
+const loadDomosFromServer = (csrf) => {
   sendAjax('GET', '/getDomos', null, (data) => {
     ReactDOM.render(
-      <DomoList domos={data.domos} />, document.querySelector("#domos")
+      <DomoList csrf={csrf} domos={data.domos} />, document.querySelector("#domos")
     );
   });
 };
@@ -15,12 +15,18 @@ const handleDomo = (e) => {
     handleError("all fields");
     return false;
   }
-
+  const csrf = $("#csrf").val();
   sendAjax('POST', $("#domoForm").attr("action"), $("#domoForm").serialize(), function() {
-    loadDomosFromServer();
+    loadDomosFromServer(csrf);
   });
 
   return false;
+};
+
+const deleteDomo = (csrf, name) => {
+  sendAjax('DELETE', `/deleteDomo?_csrf=${csrf}&name=${name}`, null, () => {
+    loadDomosFromServer(csrf);
+  });
 };
 
 const DomoForm = (props) => {
@@ -38,7 +44,7 @@ const DomoForm = (props) => {
       <input id="domoAge" type="text" name="age" placeholder="Domo Age" />
       <label htmlFor="level">Level: </label>
       <input id="domoLevel" type="text" name="level" placeholder="Domo Level" />
-      <input type="hidden" name="_csrf" value={props.csrf} />
+      <input id="csrf" type="hidden" name="_csrf" value={props.csrf} />
       <input className="makeDomoSubmit" type="submit" value="Make Domo" />
     </form>
   );
@@ -60,6 +66,7 @@ const DomoList = function(props) {
         <h3 className="domoName"> Name: {domo.name} </h3>
         <h3 className="domoAge"> Age: {domo.age} </h3>
         <h3 className="domoLevel"> Level: {domo.level} </h3>
+        <button onClick={() => deleteDomo(props.csrf, domo.name)}>Delete</button>
       </div>
     );
   });
@@ -77,10 +84,10 @@ const setup = function(csrf) {
   );
 
   ReactDOM.render(
-    <DomoList domos={[]} />, document.querySelector("#domos")
+    <DomoList csrf={csrf} domos={[]} />, document.querySelector("#domos")
   );
 
-  loadDomosFromServer();
+  loadDomosFromServer(csrf);
 };
 
 const getToken = () => {
