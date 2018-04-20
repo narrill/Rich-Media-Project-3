@@ -136,6 +136,7 @@ $(document).ready(function () {
   getToken();
 });
 "use strict";
+"use strict";
 
 var handleError = function handleError(message) {
   $("#errorMessage").text(message);
