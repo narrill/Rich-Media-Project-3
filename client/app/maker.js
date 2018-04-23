@@ -1,93 +1,92 @@
-const loadDomosFromServer = (csrf) => {
-  sendAjax('GET', '/getDomos', null, (data) => {
+const loadProjectsFromServer = (csrf) => {
+  const owner = $("meta[name=owner]").attr('content');
+  sendAjax('GET', `/getProjects?owner=${owner}`, null, (data) => {
     ReactDOM.render(
-      <DomoList csrf={csrf} domos={data.domos} />, document.querySelector("#domos")
+      <ProjectList csrf={csrf} projects={data.projects} />, document.querySelector("#projects")
     );
   });
 };
 
-const handleDomo = (e) => {
+const handleProject = (e) => {
   e.preventDefault();
 
   $("#domoMessage").animate({width: 'hide'}, 350);
 
-  if($("#domoName").val() == '' || $("#domoAge").val() == '' || $("#domoLevel").val() == '') {
+  if($("#projectName").val() == '' || $("#projectLink").val() == '' || $("#projectDescription").val() == '') {
     handleError("all fields");
     return false;
   }
   const csrf = $("#csrf").val();
-  sendAjax('POST', $("#domoForm").attr("action"), $("#domoForm").serialize(), function() {
-    loadDomosFromServer(csrf);
+  sendAjax('POST', $("#projectForm").attr("action"), $("#projectForm").serialize(), function() {
+    loadProjectsFromServer(csrf);
   });
 
   return false;
 };
 
-const deleteDomo = (csrf, name) => {
-  sendAjax('DELETE', `/deleteDomo?_csrf=${csrf}&name=${name}`, null, () => {
-    loadDomosFromServer(csrf);
+const deleteProject = (csrf, name) => {
+  sendAjax('DELETE', `/deleteProject?_csrf=${csrf}&name=${name}`, null, () => {
+    loadProjectsFromServer(csrf);
   });
 };
 
-const DomoForm = (props) => {
+const ProjectForm = (props) => {
   return (
-    <form id="domoForm"
-      onSubmit={handleDomo}
-      name="domoForm"
-      action="/maker"
+    <form id="projectForm"
+      onSubmit={handleProject}
+      name="projectForm"
+      action="/addProject"
       method="POST"
-      className="domoForm"
+      className="projectForm"
     >
       <label htmlFor="name">Name: </label>
-      <input id="domoName" type="text" name="name" placeholder="Domo Name" />
-      <label htmlFor="age">Age: </label>
-      <input id="domoAge" type="text" name="age" placeholder="Domo Age" />
-      <label htmlFor="level">Level: </label>
-      <input id="domoLevel" type="text" name="level" placeholder="Domo Level" />
+      <input id="projectName" type="text" name="name" placeholder="Project name" />
+      <label htmlFor="link">Link: </label>
+      <input id="projectName" type="text" name="link" placeholder="Link to project" />
       <input id="csrf" type="hidden" name="_csrf" value={props.csrf} />
-      <input className="makeDomoSubmit" type="submit" value="Make Domo" />
+      <textarea name="description" form="projectForm">Enter a description</textarea>
+      <input className="makeDomoSubmit" type="submit" value="Add Project" />
     </form>
   );
 };
 
-const DomoList = function(props) {
-  if(props.domos.length === 0) {
+const ProjectList = function(props) {
+  if(props.projects.length === 0) {
     return (
-      <div className="domoList">
-        <h3 className="emptyDomo">No Domos yet</h3>
+      <div className="projectList">
+        <h3 className="emptyProject">No Projects yet</h3>
       </div>
     );
   }
 
-  const domoNodes = props.domos.map(function(domo) {
+  const projectNodes = props.projects.map(function(project) {
     return (
-      <div key={domo.id} className="domo">
-        <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace" />
-        <h3 className="domoName"> Name: {domo.name} </h3>
-        <h3 className="domoAge"> Age: {domo.age} </h3>
-        <h3 className="domoLevel"> Level: {domo.level} </h3>
-        <button onClick={() => deleteDomo(props.csrf, domo.name)}>Delete</button>
+      <div key={project.id} className="project">
+        <h3 className="projectName"> Name: {project.name} </h3>
+        <h3 className="projectLink"> Link: {project.link} </h3>
+        <p className="projectDescription"> {project.description} </p>
+        <button onClick={() => deleteProject(props.csrf, project.name)}>Delete</button>
       </div>
     );
   });
 
   return (
     <div className="domoList">
-      {domoNodes}
+      {projectNodes}
     </div>
   );
 };
 
 const setup = function(csrf) {
   ReactDOM.render(
-    <DomoForm csrf={csrf} />, document.querySelector("#makeDomo")
+    <ProjectForm csrf={csrf} />, document.querySelector("#makeProject")
   );
 
   ReactDOM.render(
-    <DomoList csrf={csrf} domos={[]} />, document.querySelector("#domos")
+    <ProjectList csrf={csrf} projects={[]} />, document.querySelector("#projects")
   );
 
-  loadDomosFromServer(csrf);
+  loadProjectsFromServer(csrf);
 };
 
 const getToken = () => {

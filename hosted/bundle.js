@@ -1,110 +1,109 @@
 'use strict';
 
-var loadDomosFromServer = function loadDomosFromServer(csrf) {
-  sendAjax('GET', '/getDomos', null, function (data) {
-    ReactDOM.render(React.createElement(DomoList, { csrf: csrf, domos: data.domos }), document.querySelector("#domos"));
+var loadProjectsFromServer = function loadProjectsFromServer(csrf) {
+  var owner = $("meta[name=owner]").attr('content');
+  sendAjax('GET', '/getProjects?owner=' + owner, null, function (data) {
+    ReactDOM.render(React.createElement(ProjectList, { csrf: csrf, projects: data.projects }), document.querySelector("#projects"));
   });
 };
 
-var handleDomo = function handleDomo(e) {
+var handleProject = function handleProject(e) {
   e.preventDefault();
 
   $("#domoMessage").animate({ width: 'hide' }, 350);
 
-  if ($("#domoName").val() == '' || $("#domoAge").val() == '' || $("#domoLevel").val() == '') {
+  if ($("#projectName").val() == '' || $("#projectLink").val() == '' || $("#projectDescription").val() == '') {
     handleError("all fields");
     return false;
   }
   var csrf = $("#csrf").val();
-  sendAjax('POST', $("#domoForm").attr("action"), $("#domoForm").serialize(), function () {
-    loadDomosFromServer(csrf);
+  sendAjax('POST', $("#projectForm").attr("action"), $("#projectForm").serialize(), function () {
+    loadProjectsFromServer(csrf);
   });
 
   return false;
 };
 
-var deleteDomo = function deleteDomo(csrf, name) {
-  sendAjax('DELETE', '/deleteDomo?_csrf=' + csrf + '&name=' + name, null, function () {
-    loadDomosFromServer(csrf);
+var deleteProject = function deleteProject(csrf, name) {
+  sendAjax('DELETE', '/deleteProject?_csrf=' + csrf + '&name=' + name, null, function () {
+    loadProjectsFromServer(csrf);
   });
 };
 
-var DomoForm = function DomoForm(props) {
+var ProjectForm = function ProjectForm(props) {
   return React.createElement(
     'form',
-    { id: 'domoForm',
-      onSubmit: handleDomo,
-      name: 'domoForm',
-      action: '/maker',
+    { id: 'projectForm',
+      onSubmit: handleProject,
+      name: 'projectForm',
+      action: '/addProject',
       method: 'POST',
-      className: 'domoForm'
+      className: 'projectForm'
     },
     React.createElement(
       'label',
       { htmlFor: 'name' },
       'Name: '
     ),
-    React.createElement('input', { id: 'domoName', type: 'text', name: 'name', placeholder: 'Domo Name' }),
+    React.createElement('input', { id: 'projectName', type: 'text', name: 'name', placeholder: 'Project name' }),
     React.createElement(
       'label',
-      { htmlFor: 'age' },
-      'Age: '
+      { htmlFor: 'link' },
+      'Link: '
     ),
-    React.createElement('input', { id: 'domoAge', type: 'text', name: 'age', placeholder: 'Domo Age' }),
-    React.createElement(
-      'label',
-      { htmlFor: 'level' },
-      'Level: '
-    ),
-    React.createElement('input', { id: 'domoLevel', type: 'text', name: 'level', placeholder: 'Domo Level' }),
+    React.createElement('input', { id: 'projectName', type: 'text', name: 'link', placeholder: 'Link to project' }),
     React.createElement('input', { id: 'csrf', type: 'hidden', name: '_csrf', value: props.csrf }),
-    React.createElement('input', { className: 'makeDomoSubmit', type: 'submit', value: 'Make Domo' })
+    React.createElement(
+      'textarea',
+      { name: 'description', form: 'projectForm' },
+      'Enter a description'
+    ),
+    React.createElement('input', { className: 'makeDomoSubmit', type: 'submit', value: 'Add Project' })
   );
 };
 
-var DomoList = function DomoList(props) {
-  if (props.domos.length === 0) {
+var ProjectList = function ProjectList(props) {
+  if (props.projects.length === 0) {
     return React.createElement(
       'div',
-      { className: 'domoList' },
+      { className: 'projectList' },
       React.createElement(
         'h3',
-        { className: 'emptyDomo' },
-        'No Domos yet'
+        { className: 'emptyProject' },
+        'No Projects yet'
       )
     );
   }
 
-  var domoNodes = props.domos.map(function (domo) {
+  var projectNodes = props.projects.map(function (project) {
     return React.createElement(
       'div',
-      { key: domo.id, className: 'domo' },
-      React.createElement('img', { src: '/assets/img/domoface.jpeg', alt: 'domo face', className: 'domoFace' }),
+      { key: project.id, className: 'project' },
       React.createElement(
         'h3',
-        { className: 'domoName' },
+        { className: 'projectName' },
         ' Name: ',
-        domo.name,
+        project.name,
         ' '
       ),
       React.createElement(
         'h3',
-        { className: 'domoAge' },
-        ' Age: ',
-        domo.age,
+        { className: 'projectLink' },
+        ' Link: ',
+        project.link,
         ' '
       ),
       React.createElement(
-        'h3',
-        { className: 'domoLevel' },
-        ' Level: ',
-        domo.level,
+        'p',
+        { className: 'projectDescription' },
+        ' ',
+        project.description,
         ' '
       ),
       React.createElement(
         'button',
         { onClick: function onClick() {
-            return deleteDomo(props.csrf, domo.name);
+            return deleteProject(props.csrf, project.name);
           } },
         'Delete'
       )
@@ -114,16 +113,16 @@ var DomoList = function DomoList(props) {
   return React.createElement(
     'div',
     { className: 'domoList' },
-    domoNodes
+    projectNodes
   );
 };
 
 var setup = function setup(csrf) {
-  ReactDOM.render(React.createElement(DomoForm, { csrf: csrf }), document.querySelector("#makeDomo"));
+  ReactDOM.render(React.createElement(ProjectForm, { csrf: csrf }), document.querySelector("#makeProject"));
 
-  ReactDOM.render(React.createElement(DomoList, { csrf: csrf, domos: [] }), document.querySelector("#domos"));
+  ReactDOM.render(React.createElement(ProjectList, { csrf: csrf, projects: [] }), document.querySelector("#projects"));
 
-  loadDomosFromServer(csrf);
+  loadProjectsFromServer(csrf);
 };
 
 var getToken = function getToken() {
@@ -135,6 +134,16 @@ var getToken = function getToken() {
 $(document).ready(function () {
   getToken();
 });
+"use strict";
+// class NoteList extends React.Component {
+//   constructor(notes) {
+//     this.notes = notes;
+//   }
+
+//   render() {
+//     return 
+//   }
+// }
 "use strict";
 "use strict";
 
