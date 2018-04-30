@@ -3,8 +3,6 @@
 var handleLogin = function handleLogin(e) {
   e.preventDefault();
 
-  $("#domoMessage").animate({ width: 'hide' }, 350);
-
   if ($("#user").val() == '' || $("#pass").val() == '') {
     handleError("RAWR! USERNAME OR PASSWORD IS EMPTY");
     return false;
@@ -17,8 +15,6 @@ var handleLogin = function handleLogin(e) {
 
 var handleSignup = function handleSignup(e) {
   e.preventDefault();
-
-  $("#domoMessage").animate({ width: 'hide' }, 350);
 
   if ($("#user").val() == '' || $("#pass").val() == '' || $("#pass2").val() == '') {
     handleError("RAWRALLFIELDSAREREQUIRED");
@@ -131,13 +127,22 @@ $(document).ready(function () {
 });
 "use strict";
 
+var ErrorMessage = function ErrorMessage(props) {
+  return React.createElement(
+    "h3",
+    { className: "error" },
+    props.message
+  );
+};
+
 var handleError = function handleError(message) {
-  $("#errorMessage").text(message);
-  $("#domoMessage").animate({ width: 'toggle' }, 350);
+  ReactDOM.render(React.createElement(ErrorMessage, { message: message }), document.querySelector('#error'));
+  window.setTimeout(function () {
+    ReactDOM.render(React.createElement(ErrorMessage, { message: "" }), document.querySelector('#error'));
+  }, 5000);
 };
 
 var redirect = function redirect(response) {
-  $("#domoMessage").animate({ width: 'hide' }, 350);
   window.location = response.redirect;
 };
 
@@ -150,6 +155,22 @@ var sendAjax = function sendAjax(type, action, data, success) {
     dataType: 'json',
     success: success,
     error: function error(xhr, status, _error) {
+      var messageObj = JSON.parse(xhr.responseText);
+      handleError(messageObj.error);
+    }
+  });
+};
+
+var sendFormDataAjax = function sendFormDataAjax(action, data, callback) {
+  $.ajax({
+    cache: false,
+    type: 'POST',
+    url: action,
+    data: data,
+    processData: false,
+    contentType: false,
+    success: callback,
+    error: function error(xhr, status, _error2) {
       var messageObj = JSON.parse(xhr.responseText);
       handleError(messageObj.error);
     }

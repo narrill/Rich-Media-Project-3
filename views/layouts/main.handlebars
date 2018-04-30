@@ -1,7 +1,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>DomoMaker</title>
+  <title>Portfoliator</title>
   <script crossorigin src="https://unpkg.com/react@15/dist/react.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@15/dist/react-dom.min.js"></script>
   <script crossorigin src="https://unpkg.com/prop-types/prop-types.min.js"></script>
@@ -10,12 +10,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/remarkable/1.6.2/remarkable.min.js"></script>
   <link rel="shortcut icon" href="/assets/img/favicon.png"/>
   <link rel="stylesheet" type="text/css" href="/assets/style.css"/>
-  {{#if owner}}
-  	<meta name="owner" content={{owner}}>
-  {{/if}}
+  <meta name="owner" content={{owner}}>
+  <meta name="ownerName" content={{ownerName}}>
   <meta name="isOwner" content={{isOwner}}>
 </head>
 <body>  
   {{{body}}}
+  <div id="error">
+  </div>
 </body>
 </html>

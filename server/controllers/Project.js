@@ -1,5 +1,6 @@
 const models = require('../models');
 const Project = models.Project;
+const ImageStore = models.ImageStore;
 
 const portfolioPage = (req, res) => {
   Project.ProjectModel.findByOwner(req.accountId, (err, docs) => {
@@ -15,34 +16,59 @@ const portfolioPage = (req, res) => {
       csrfToken: req.csrfToken(), 
       projects: docs, 
       owner: req.accountId, 
+      ownerName: req.accountName,
       isOwner: isOwner 
     });
   });
 };
 
 const addProject = (req, res) => {
-  if (!req.body.name || !req.body.description || !req.body.link) {
-    return res.status(400).json({ error: 'Must have name, description, and link' });
+  if (!req.body.name 
+    || !req.body.description 
+    || !req.body.link 
+    || !req.files 
+    || !req.files.image) {
+    return res.status(400).json({ error: 'Must have name, image, description, and link' });
   }
 
-  const domoData = {
-    name: req.body.name,
-    description: req.body.description,
-    link: req.body.link,
-    owner: req.session.account._id,
-  };
+  return ImageStore.submitImage(req.files.image.data).then(({image, imageId}) => {
+    const domoData = {
+      name: req.body.name,
+      description: req.body.description,
+      link: req.body.link,
+      image: image,
+      imageId: imageId,
+      owner: req.session.account._id,
+    };
 
-  const newDomo = new Project.ProjectModel(domoData);
-  const domoPromise = newDomo.save();
-  domoPromise.then(() => res.status(200).json({}));
-  domoPromise.catch((err) => {
+    //const newDomo = new Project.ProjectModel(domoData);
+    return Project.ProjectModel.findOneAndUpdate(
+      {
+        name: domoData.name
+      },
+      domoData,
+      {
+        upsert: true
+      }
+    ).lean().exec();
+
+  }).then((docs) => {
+    if(docs && docs.length > 0) {
+      return ImageStore.removeImage(docs[0].imageId);
+    }
+    else return Promise.resolve();
+  }).then(() => {    
+    res.status(200).json({});
+  }).catch((err) => {
     console.log(err);
     if (err.code === 11000) {
-      return res.status(400).json({ error: 'RAWR!!! AN ERROR OCCURRED!!' });
+      res.status(400).json({ error: 'RAWR!!! AN ERROR OCCURRED!!' });
     }
-    return res.status(400).json({ error: 'RAAAAAAAWWR AN ERRORRRRRRRR!!!!' });
+    res.status(400).json({ error: 'RAAAAAAAWWR AN ERRORRRRRRRR!!!!' });
+    return ImageStore.removeImage(domoData.image);
+  }).catch((err) => {
+    console.log(err);
   });
-  return domoPromise;
 };
 
 const getProjects = (request, response) => {
@@ -58,7 +84,11 @@ const getProjects = (request, response) => {
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    return res.json({ projects: docs });
+    const projects = docs.map((doc) => {
+      return Project.ProjectModel.toAPI(doc);
+    });
+
+    return res.json({ projects: projects });
   });
 };
 
@@ -72,12 +102,11 @@ const deleteProject = (request, response) => {
     return res.status(400).json({ error: "You must provide the name of the project to delete" });
   }
 
-  return Project.ProjectModel.removeByOwnerAndName(req.session.account._id, name, (err) => {
-    if(err) {
-      console.log(err);
-      return res.status(500).json({ error: "Error deleting domo domo" });
-    }
-    return res.status(204).end();
+  return Project.ProjectModel.removeByOwnerAndName(req.session.account._id, name).then(() => {
+    res.status(204).end();
+  }).catch((err) => {
+    console.log(err);
+    return res.status(500).json({ error: "Error deleting domo domo" });
   });
 };
 

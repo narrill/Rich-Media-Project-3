@@ -8,12 +8,13 @@ const router = (app) => {
   app.get('/login', mid.requiresSecure, mid.requiresLogout, controllers.Account.loginPage);
   app.post('/login', mid.requiresSecure, mid.requiresLogout, controllers.Account.login);
   app.post('/signup', mid.requiresSecure, mid.requiresLogout, controllers.Account.signup);
+  app.post('/changePassword', mid.requiresSecure, mid.requiresLogin, controllers.Account.changePassword);
   app.get('/logout', mid.requiresLogin, controllers.Account.logout);
   app.post('/addProject', mid.requiresLogin, controllers.Project.addProject);
   app.post('/updatePrject', mid.requiresLogin, controllers.Project.updateProject);
-  app.get('/404', (req, res) => res.render('404'));
-  app.get(/\/.*\S.*/, mid.requiresSecure, mid.getAccountId, controllers.Project.portfolioPage);
+  app.get('/404', (req, res) => res.render('404', {layout:"fourohfour"}));
   app.get('/', mid.requiresSecure, mid.requiresLogout, controllers.Account.loginPage);
+  app.get(/\/.*\S.*/, mid.requiresSecure, mid.getAccountId, controllers.Project.portfolioPage);
 };
 
 module.exports = router;

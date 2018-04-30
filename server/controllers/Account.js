@@ -31,13 +31,13 @@ const signup = (request, response) => {
   const req = request;
   const res = response;
 
-  req.body.username = `${req.body.username}`;
-  req.body.pass = `${req.body.pass}`;
-  req.body.pass2 = `${req.body.pass2}`;
-
   if (!req.body.username || !req.body.pass || !req.body.pass2) {
     return res.status(400).json({ error: 'RAWR! All fields are required' });
   }
+
+  req.body.username = `${req.body.username}`;
+  req.body.pass = `${req.body.pass}`;
+  req.body.pass2 = `${req.body.pass2}`;
 
   if (req.body.pass !== req.body.pass2) {
     return res.status(400).json({ error: 'RAWR! Passwords do not match' });
@@ -60,9 +60,42 @@ const signup = (request, response) => {
       if (err.code === 11000) {
         return res.status(400).json({ error: 'Username already in use' });
       }
-      return res.status(400).json({ error: 'An error occurred' });
+      return res.status(500).json({ error: 'An error occurred' });
     });
   });
+};
+
+const changePassword = (request, response) => {
+  const req = request;
+  const res = response;
+
+  if(!req.body.pass || !req.body.newPass || !req.body.newPass2)
+    return res.status(400).json({error: "All fields are required"});
+
+  req.body.pass = `${req.body.pass}`;
+  req.body.newPass = `${req.body.newPass}`;
+  req.body.newPass2 = `${req.body.newPass2}`;
+
+  if(req.body.newPass !== req.body.newPass2)
+    return res.status(400).json({error:"Passwords do not match"});
+
+  Account.AccountModel.authenticate(req.session.account.username, req.body.pass, (err, account) => {
+    if(err) {
+      console.log(err);
+      return res.status(400).json({ error: "Incorrect password" });
+    }
+    Account.AccountModel.generateHash(req.body.newPass, (salt, hash) => {
+      account.salt = salt;
+      account.password = hash;
+      account.save().then(() => {
+        res.json({ redirect: `/logout`});
+      }).catch((err) => {
+        console.log(err);
+        res.status(500).json({ error: "An error occurred" });
+      });
+    });
+
+  })
 };
 
 const getToken = (request, response) => {
@@ -80,4 +113,5 @@ module.exports.loginPage = loginPage;
 module.exports.login = login;
 module.exports.logout = logout;
 module.exports.signup = signup;
+module.exports.changePassword = changePassword;
 module.exports.getToken = getToken;

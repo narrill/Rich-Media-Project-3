@@ -31,6 +31,7 @@ const getAccountId = (req, res, next) => {
     if(doc) {
       const acc = AccountModel.toAPI(doc);
       req.accountId = acc._id;
+      req.accountName = acc.username;
       next();
     }
     else {

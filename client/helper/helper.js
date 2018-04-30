@@ -1,10 +1,23 @@
+const ErrorMessage = (props) => {
+  return (
+    <h3 className="error">{props.message}</h3>
+  );
+};
+
 const handleError = (message) => {
-  $("#errorMessage").text(message);
-  $("#domoMessage").animate({width: 'toggle'}, 350);
+  ReactDOM.render(
+    <ErrorMessage message={message} />,
+    document.querySelector('#error')
+  );
+  window.setTimeout(() => {
+    ReactDOM.render(
+      <ErrorMessage message={""} />,
+      document.querySelector('#error')
+    );
+  }, 5000);
 };
 
 const redirect = (response) => {
-  $("#domoMessage").animate({width: 'hide'}, 350);
   window.location = response.redirect;
 };
 
@@ -21,4 +34,20 @@ const sendAjax = (type, action, data, success) => {
       handleError(messageObj.error);
     }
   })
-}
+};
+
+const sendFormDataAjax = (action, data, callback) => {
+  $.ajax({
+    cache: false,
+    type: 'POST',
+    url: action,
+    data: data,
+    processData: false,
+    contentType: false,
+    success: callback,
+    error: function(xhr, status, error) {
+      var messageObj = JSON.parse(xhr.responseText);
+      handleError(messageObj.error);
+    }
+  });
+};
