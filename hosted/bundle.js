@@ -40,12 +40,12 @@ var handleChangePassword = function handleChangePassword(e) {
   e.preventDefault();
 
   if ($("#pass").val() == '' || $("#newPass").val() == '' || $("#newPass2").val() == '') {
-    handleError("RAWRALLFIELDSAREREQUIRED");
+    handleError("All fields are required");
     return false;
   }
 
   if ($("#newPass").val() !== $("#newPass2").val()) {
-    handleError("RAAAAAWWRRRRRRR PASSWPRDS DP PT MATCHHHHHH");
+    handleError("Passwords don't match");
   }
 
   sendAjax('POST', $("#changePassForm").attr("action"), $("#changePassForm").serialize(), redirect);
@@ -94,67 +94,6 @@ var ProjectForm = function ProjectForm(props) {
       React.createElement("input", { id: "csrf", type: "hidden", name: "_csrf", value: props.csrf }),
       React.createElement("textarea", { name: "description", form: "projectForm", placeholder: "Project description" }),
       React.createElement("input", { className: "formSubmit", type: "submit", value: "Add Project" })
-    )
-  );
-};
-
-var HeaderForm = function HeaderForm(props) {
-  // return (
-  // <form id="headerForm"
-  //   onSubmit={handleHeader}
-  //   name="headerForm"
-  //   action="/addHeader"
-  //   method="POST"
-  //   className="headerForm"
-  // >
-  //   <label>
-  //     Name: <input
-  // );
-};
-
-var ProjectHeaders = function ProjectHeaders(props) {
-  if (props.headers.length === 0) return;
-
-  var headerNodes = props.headers.map(function (header) {
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement(
-        "h3",
-        null,
-        header.name
-      ),
-      React.createElement(
-        "p",
-        null,
-        header.description
-      )
-    );
-  });
-
-  return { headerNodes: headerNodes };
-};
-
-var FullProject = function FullProject(props) {
-  var project = props.project;
-  return React.createElement(
-    "div",
-    { className: "item" },
-    React.createElement(
-      "h3",
-      null,
-      project.name
-    ),
-    React.createElement(
-      "p",
-      null,
-      project.description
-    ),
-    React.createElement(ProjectHeaders, { project: project }),
-    React.createElement(
-      "a",
-      { href: project.link },
-      "Link"
     )
   );
 };

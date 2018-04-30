@@ -6,7 +6,7 @@ const portfolioPage = (req, res) => {
   Project.ProjectModel.findByOwner(req.accountId, (err, docs) => {
     if (err) {
       console.log(err);
-      return res.status(400).json({ error: 'RAWR RAWR!!!!! AN ERROR!!!!!!!!' });
+      return res.status(500).json({ error: 'An error occurred' });
     }
     let id;
     if (req.session.account) { id = req.session.account._id.toString('hex'); }
@@ -62,9 +62,9 @@ const addProject = (req, res) => {
     .catch((err) => {
       console.log(err);
       if (err.code === 11000) {
-        res.status(400).json({ error: 'RAWR!!! AN ERROR OCCURRED!!' });
+        res.status(500).json({ error: 'An error occurred' });
       }
-      res.status(400).json({ error: 'RAAAAAAAWWR AN ERRORRRRRRRR!!!!' });
+      res.status(500).json({ error: 'An error occurred' });
       return ImageStore.removeImage(domoData.image);
     })
     .catch((err) => {
@@ -105,7 +105,7 @@ const deleteProject = (request, response) => {
     res.status(204).end();
   }).catch((err) => {
     console.log(err);
-    return res.status(500).json({ error: 'Error deleting domo domo' });
+    return res.status(500).json({ error: 'Error deleting project' });
   });
 };
 

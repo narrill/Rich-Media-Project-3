@@ -15,12 +15,12 @@ const handleSignup = (e) => {
   e.preventDefault();
 
   if($("#user").val() == '' || $("#pass").val() == '' || $("#pass2").val() == '') {
-    handleError("RAWRALLFIELDSAREREQUIRED");
+    handleError("All fields are required");
     return false;
   }
 
   if($("#pass").val() !== $("#pass2").val()) {
-    handleError("RAAAAAWWRRRRRRR PASSWPRDS DP PT MATCHHHHHH");
+    handleError("Passwords don't match");
   }
 
   sendAjax('POST', $("#signupForm").attr("action"), $("#signupForm").serialize(), redirect);

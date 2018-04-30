@@ -44,12 +44,12 @@ const handleChangePassword = (e) => {
   e.preventDefault();
 
   if($("#pass").val() == '' || $("#newPass").val() == '' || $("#newPass2").val() == '') {
-    handleError("RAWRALLFIELDSAREREQUIRED");
+    handleError("All fields are required");
     return false;
   }
 
   if($("#newPass").val() !== $("#newPass2").val()) {
-    handleError("RAAAAAWWRRRRRRR PASSWPRDS DP PT MATCHHHHHH");
+    handleError("Passwords don't match");
   }
 
   sendAjax('POST', $("#changePassForm").attr("action"), $("#changePassForm").serialize(), redirect);
@@ -84,48 +84,6 @@ const ProjectForm = (props) => {
         <textarea name="description" form="projectForm" placeholder="Project description"></textarea>
         <input className="formSubmit" type="submit" value="Add Project" />
       </form>
-    </div>
-  );
-};
-
-const HeaderForm = (props) => {
-  // return (
-    // <form id="headerForm"
-    //   onSubmit={handleHeader}
-    //   name="headerForm"
-    //   action="/addHeader"
-    //   method="POST"
-    //   className="headerForm"
-    // >
-    //   <label>
-    //     Name: <input
-  // );
-};
-
-const ProjectHeaders = (props) => {
-  if(props.headers.length === 0)
-    return;
-
-  const headerNodes = props.headers.map((header) => {
-    return (
-      <React.Fragment>
-        <h3>{header.name}</h3>
-        <p>{header.description}</p>
-      </React.Fragment>
-    );
-  });
-
-  return ({headerNodes});
-};
-
-const FullProject = function(props) {
-  const project = props.project;
-  return (
-    <div className="item">
-      <h3>{project.name}</h3>
-      <p>{project.description}</p>
-      <ProjectHeaders project={project} />
-      <a href={project.link}>Link</a>
     </div>
   );
 };
