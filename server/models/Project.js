@@ -13,14 +13,14 @@ const HeaderSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    set: setEscaped
+    set: setEscaped,
   },
   description: {
     type: String,
     required: true,
     trim: true,
-    set: setEscaped
-  }
+    set: setEscaped,
+  },
 });
 
 const ProjectSchema = new mongoose.Schema({
@@ -34,23 +34,23 @@ const ProjectSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    set: setEscaped
+    set: setEscaped,
   },
   link: {
     type: String,
     required: true,
     trim: true,
-    set: setEscaped
+    set: setEscaped,
   },
   image: {
     type: String,
     required: true,
-    set: setEscaped
+    set: setEscaped,
   },
   imageId: {
     type: String,
     required: true,
-    set: setEscaped
+    set: setEscaped,
   },
   headers: [HeaderSchema],
   owner: {
@@ -68,7 +68,7 @@ ProjectSchema.statics.toAPI = (doc) => ({
   name: doc.name,
   description: doc.description,
   link: doc.link,
-  image: doc.image
+  image: doc.image,
 });
 
 ProjectSchema.statics.findByOwner = (ownerId, callback) => {
@@ -81,14 +81,11 @@ ProjectSchema.statics.findByOwner = (ownerId, callback) => {
 ProjectSchema.statics.removeByOwnerAndName = (ownerId, name) => {
   const search = {
     owner: convertId(ownerId),
-    name: name
+    name,
   };
-  return ProjectModel.find(search).then((docs) => {
-    return ImageStore.removeImage(docs[0].imageId).then(() => {
-      return docs[0].remove();
-    });
-  });
-}
+  return ProjectModel.find(search).then((docs) =>
+    ImageStore.removeImage(docs[0].imageId).then(() => docs[0].remove()));
+};
 
 ProjectModel = mongoose.model('Project', ProjectSchema);
 

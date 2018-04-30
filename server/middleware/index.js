@@ -26,19 +26,18 @@ const bypassSecure = (req, res, next) => {
 };
 
 const getAccountId = (req, res, next) => {
+  const request = req;
   const username = req.url.substr(1); // Remove the leading slash
   AccountModel.findByUsername(username, (err, doc) => {
-    if(doc) {
+    if (doc) {
       const acc = AccountModel.toAPI(doc);
-      req.accountId = acc._id;
-      req.accountName = acc.username;
-      next();
+      request.accountId = acc._id;
+      request.accountName = acc.username;
+      return next();
     }
-    else {
-      return res.status(404).redirect('/404');
-    }
+    return res.status(404).redirect('/404');
   });
-}
+};
 
 module.exports.requiresLogin = requiresLogin;
 module.exports.requiresLogout = requiresLogout;

@@ -69,33 +69,35 @@ const changePassword = (request, response) => {
   const req = request;
   const res = response;
 
-  if(!req.body.pass || !req.body.newPass || !req.body.newPass2)
-    return res.status(400).json({error: "All fields are required"});
+  if (!req.body.pass || !req.body.newPass || !req.body.newPass2) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
 
   req.body.pass = `${req.body.pass}`;
   req.body.newPass = `${req.body.newPass}`;
   req.body.newPass2 = `${req.body.newPass2}`;
 
-  if(req.body.newPass !== req.body.newPass2)
-    return res.status(400).json({error:"Passwords do not match"});
+  if (req.body.newPass !== req.body.newPass2) {
+    return res.status(400).json({ error: 'Passwords do not match' });
+  }
 
-  Account.AccountModel.authenticate(req.session.account.username, req.body.pass, (err, account) => {
-    if(err) {
+  const sesAcc = req.session.account;
+
+  return Account.AccountModel.authenticate(sesAcc.username, req.body.pass, (err, account) => {
+    if (err) {
       console.log(err);
-      return res.status(400).json({ error: "Incorrect password" });
+      return res.status(400).json({ error: 'Incorrect password' });
     }
-    Account.AccountModel.generateHash(req.body.newPass, (salt, hash) => {
-      account.salt = salt;
-      account.password = hash;
-      account.save().then(() => {
-        res.json({ redirect: `/logout`});
-      }).catch((err) => {
-        console.log(err);
-        res.status(500).json({ error: "An error occurred" });
+    return Account.AccountModel.generateHash(req.body.newPass, (salt, hash) => {
+      const acc = account;
+      acc.salt = salt;
+      acc.password = hash;
+      return acc.save().then(() => res.json({ redirect: '/logout' })).catch((error) => {
+        console.log(error);
+        return res.status(500).json({ error: 'An error occurred' });
       });
     });
-
-  })
+  });
 };
 
 const getToken = (request, response) => {

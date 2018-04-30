@@ -9,65 +9,67 @@ const portfolioPage = (req, res) => {
       return res.status(400).json({ error: 'RAWR RAWR!!!!! AN ERROR!!!!!!!!' });
     }
     let id;
-    if(req.session.account)
-      id = req.session.account._id.toString('hex');
-    const isOwner = req.session.account && id == req.accountId;
-    return res.render('app', { 
-      csrfToken: req.csrfToken(), 
-      projects: docs, 
-      owner: req.accountId, 
+    if (req.session.account) { id = req.session.account._id.toString('hex'); }
+    const isOwner = req.session.account && id === req.accountId;
+    return res.render('app', {
+      csrfToken: req.csrfToken(),
+      projects: docs,
+      owner: req.accountId,
       ownerName: req.accountName,
-      isOwner: isOwner 
+      isOwner,
     });
   });
 };
 
 const addProject = (req, res) => {
-  if (!req.body.name 
-    || !req.body.description 
-    || !req.body.link 
-    || !req.files 
+  if (!req.body.name
+    || !req.body.description
+    || !req.body.link
+    || !req.files
     || !req.files.image) {
     return res.status(400).json({ error: 'Must have name, image, description, and link' });
   }
 
-  return ImageStore.submitImage(req.files.image.data).then(({image, imageId}) => {
+  return ImageStore.submitImage(req.files.image.data).then(({ image, imageId }) => {
     const domoData = {
       name: req.body.name,
       description: req.body.description,
       link: req.body.link,
-      image: image,
-      imageId: imageId,
+      image,
+      imageId,
       owner: req.session.account._id,
     };
 
-    //const newDomo = new Project.ProjectModel(domoData);
+    // const newDomo = new Project.ProjectModel(domoData);
     return Project.ProjectModel.findOneAndUpdate(
       {
-        name: domoData.name
+        name: domoData.name,
       },
       domoData,
       {
-        upsert: true
+        upsert: true,
       }
-    ).lean().exec();
-
-  }).then((docs) => {
-    if(docs && docs.length > 0) {
-      return ImageStore.removeImage(docs[0].imageId);
-    }
-    else return Promise.resolve();
-  }).then(() => {    
-    res.status(200).json({});
-  }).catch((err) => {
-    console.log(err);
-    if (err.code === 11000) {
-      res.status(400).json({ error: 'RAWR!!! AN ERROR OCCURRED!!' });
-    }
-    res.status(400).json({ error: 'RAAAAAAAWWR AN ERRORRRRRRRR!!!!' });
-    return ImageStore.removeImage(domoData.image);
-  }).catch((err) => {
-    console.log(err);
+    ).lean().exec()
+    .then((docs) => {
+      if (docs && docs.length > 0) {
+        return ImageStore.removeImage(docs[0].imageId);
+      }
+      return Promise.resolve();
+    })
+    .then(() => {
+      res.status(200).json({});
+    })
+    .catch((err) => {
+      console.log(err);
+      if (err.code === 11000) {
+        res.status(400).json({ error: 'RAWR!!! AN ERROR OCCURRED!!' });
+      }
+      res.status(400).json({ error: 'RAAAAAAAWWR AN ERRORRRRRRRR!!!!' });
+      return ImageStore.removeImage(domoData.image);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   });
 };
 
@@ -75,8 +77,7 @@ const getProjects = (request, response) => {
   const req = request;
   const res = response;
 
-  if(!req.query.owner)
-    return res.status(400).json({error: 'Must provide an owner ID'});
+  if (!req.query.owner) { return res.status(400).json({ error: 'Must provide an owner ID' }); }
 
   return Project.ProjectModel.findByOwner(req.query.owner, (err, docs) => {
     if (err) {
@@ -84,11 +85,9 @@ const getProjects = (request, response) => {
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    const projects = docs.map((doc) => {
-      return Project.ProjectModel.toAPI(doc);
-    });
+    const projects = docs.map((doc) => Project.ProjectModel.toAPI(doc));
 
-    return res.json({ projects: projects });
+    return res.json({ projects });
   });
 };
 
@@ -98,15 +97,15 @@ const deleteProject = (request, response) => {
 
   const name = req.query.name;
 
-  if(!name) {
-    return res.status(400).json({ error: "You must provide the name of the project to delete" });
+  if (!name) {
+    return res.status(400).json({ error: 'You must provide the name of the project to delete' });
   }
 
   return Project.ProjectModel.removeByOwnerAndName(req.session.account._id, name).then(() => {
     res.status(204).end();
   }).catch((err) => {
     console.log(err);
-    return res.status(500).json({ error: "Error deleting domo domo" });
+    return res.status(500).json({ error: 'Error deleting domo domo' });
   });
 };
 
